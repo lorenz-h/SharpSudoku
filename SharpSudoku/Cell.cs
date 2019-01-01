@@ -11,7 +11,7 @@ namespace SharpSudoku
         public int Row { get; }
         public int Col { get; }
         public int Index { get; }
-        public int Value;
+        public int Value { get; set; }
         public bool Editeable;
 
         public Cell(int cell_index, int game_size, char cell_value)
@@ -22,7 +22,7 @@ namespace SharpSudoku
             Col = Index % game_size;
 
             Value = (Int32)cell_value - 48;
-            Editeable = (cell_value == 0);
+            Editeable = (Value == 0);
         }
 
         public override string ToString()

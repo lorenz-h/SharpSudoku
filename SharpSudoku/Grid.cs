@@ -10,6 +10,7 @@ namespace SharpSudoku
     {
         public static int size = 9;
         public List<Cell> cells = new List<Cell>();
+        private int steps = 0;
 
         public Grid(string board_string)
         {
@@ -31,62 +32,74 @@ namespace SharpSudoku
             return output_string;
         }
 
-        public bool Solve()
+        public void Solve()
         {
-            Explorer(); //starts exploring the sudoku in the top left corner
-            return true;
-        }
-
-        private bool Explorer()
-        {
-            int cell_index = 0;
-            bool solved = false;
-            while (!solved)
+            int cell_index = ForwardTrack(-1);
+            Console.WriteLine("Started Solving the Sudoku....");
+            while (true)
             {
-                if (cell_index > (size * size) - 1)
+                steps++;
+                if (steps % 10000 == 0)
                 {
-                    solved = true;
-                    continue;
-                }
-
-                if (!cells[cell_index].Editeable)
-                {
-                    cell_index += 1;
-                    continue;
-
+                    Console.Write("\r{0}%   ", ToString());
                 }
 
                 cells[cell_index].Value += 1;
 
-                if (cells[cell_index].Value > 9) // if you have tried all combinations and none of them worked go one step back
+                if (cells[cell_index].Value > 9)
                 {
-                    cells[cell_index].Value = 0;
-                    int i = 1;
-                    while (i <= cell_index)
-                    {
-                        if (cells[cell_index - i].Editeable)
-                        {
-                            cell_index -= i;
-                            break;
-                        }
-                        i++;
-                    }
+                    // if you have tried all options and all of them did infringed a constraint, go back
+                    cell_index = BackTrack(cell_index);
                     continue;
-
                 }
-
+                    
                 if (constraints_satisfied(cell_index))
                 {
-                    cell_index += 1;
-                    continue;
+                    cell_index = ForwardTrack(cell_index);
+                    if (cell_index == -1)
+                    {
+                        Console.WriteLine("Optimization Finished");
+                        break;
+                    }
                 }
-                else
-                {
-                    continue;
-                }
+                
             }
-            return true;
+            
         }
+
+        private int ForwardTrack(int cell_index)
+        {
+            while (cell_index < size*size)
+            {
+                cell_index += 1;
+                if (cells[cell_index].Editeable)
+                {
+                    return cell_index;
+                }
+                
+            }
+            return -1;
+        }
+
+        private int BackTrack(int cell_index)
+        {
+            cells[cell_index].Value = 0;
+            cell_index -=1;
+            if (cell_index < 0)
+            {
+                return 0;
+            }
+            if (cells[cell_index].Editeable)
+            {
+                return cell_index;
+            }
+
+            else
+            {
+                return BackTrack(cell_index);
+            }
+        }
+
 
         private bool constraints_satisfied(int changed_cell_index)
         // Checks only for row and column constraint.
