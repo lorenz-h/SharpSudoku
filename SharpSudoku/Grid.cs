@@ -8,15 +8,18 @@ namespace SharpSudoku
 {
     class Grid
     {
-        public static int size = 9;
+        public static int size = 9 ;
         public List<Cell> cells = new List<Cell>();
-        private int steps = 0;
+        
 
         public Grid(string board_string)
         {
+            if (board_string.Length != size * size)
+            {
+                throw new IndexOutOfRangeException("Length of board string does not match board size");
+            }
             for (int i = 0; i < size * size; i++)
             {
-
                 cells.Add(new Cell(i, size, board_string[i]));
             }
 
@@ -34,72 +37,53 @@ namespace SharpSudoku
 
         public void Solve()
         {
-            int cell_index = ForwardTrack(-1);
-            Console.WriteLine("Started Solving the Sudoku....");
-            while (true)
+            int cell_index = 0;
+            int steps = 0;
+
+            while (cell_index < size * size)
             {
-                steps++;
+                steps += 1;
                 if (steps % 10000 == 0)
                 {
                     Console.Write("\r{0}%   ", ToString());
-                }
-
-                cells[cell_index].Value += 1;
-
-                if (cells[cell_index].Value > 9)
-                {
-                    // if you have tried all options and all of them did infringed a constraint, go back
-                    cell_index = BackTrack(cell_index);
-                    continue;
-                }
-                    
-                if (constraints_satisfied(cell_index))
-                {
-                    cell_index = ForwardTrack(cell_index);
-                    if (cell_index == -1)
-                    {
-                        Console.WriteLine("Optimization Finished");
-                        break;
-                    }
-                }
-                
-            }
-            
-        }
-
-        private int ForwardTrack(int cell_index)
-        {
-            while (cell_index < size*size)
-            {
-                cell_index += 1;
+                };
                 if (cells[cell_index].Editeable)
                 {
-                    return cell_index;
+                    cells[cell_index].Value += 1;
+                    
+                    if (constraints_satisfied(cell_index)){
+                        cell_index += 1;
+                        continue;
+                    };
                 }
-                
+                else
+                {
+                    cell_index += 1; // if cell is not editeable go to the next one.
+                };
+                if (cells[cell_index].Value > 9) // if all vals have been tried set back to zero and go back to last editeable cell.
+                {
+                    cell_index = Backtrack(cell_index);
+                    continue;
+                };
             }
-            return -1;
         }
 
-        private int BackTrack(int cell_index)
+        private int Backtrack(int cell_index)
         {
             cells[cell_index].Value = 0;
-            cell_index -=1;
-            if (cell_index < 0)
+            for (int i = cell_index-1; i>0; --i)
             {
-                return 0;
+                
+                if (cells[i].Editeable)
+                {
+                    Console.WriteLine(i);
+                    return cell_index;
+                   
+                }
             }
-            if (cells[cell_index].Editeable)
-            {
-                return cell_index;
-            }
-
-            else
-            {
-                return BackTrack(cell_index);
-            }
+            
+            throw new NotImplementedException();
         }
-
 
         private bool constraints_satisfied(int changed_cell_index)
         // Checks only for row and column constraint.

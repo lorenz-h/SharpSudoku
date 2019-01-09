@@ -43,6 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Board.cs" />
+    <Compile Include="BruteSolver.cs" />
     <Compile Include="Cell.cs" />
     <Compile Include="Grid.cs" />
     <Compile Include="Program.cs" />
