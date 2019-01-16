@@ -55,104 +55,30 @@ namespace SharpSudoku
         }
 
         
-        private int MoveOLD(int elem_index, int direction)
-        {
-            while (!Editeable[Row_From_Index(elem_index), Col_From_Index(elem_index)])
-            {
-                elem_index += direction;
-                if (elem_index > (Size * Size) - 1)
-                {
-                    // this means that the solver must have succefully solved the puzzle
-                    return -99;
-                }
-                if (elem_index < -5)
-                {
-                    throw new Exception("Element Index became negative");
-                }
-            }
-            return elem_index;
-        }
-
-        public void BruteSolveOLD()
-        {
-            Int64 counter = 0;
-            int elem_index = 0;
-            int direction = 1; // forward = 1, backward = -1, 0 = do not move
-            byte Row;
-            byte Col;
-            Console.WriteLine("Starting Brute Solve");
-            while (true)
-            {
-                counter++;
-                if (counter%50 == 0)
-                {
-                    LogToConsole();
-                }
-                elem_index = Move(elem_index, direction);
-                if (elem_index == -99)
-                {
-                    if (CheckConstraints() != 0)
-                    {
-                        throw new Exception("Something weird happened. Algo thought it finished but board still contained errors.");
-                    }
-                    Console.WriteLine("Succesfully solved");
-                    break;
-                }
-                Row = Row_From_Index(elem_index);
-                Col = Col_From_Index(elem_index);
-
-                if (Editeable[Row, Col])
-                {
-                    Cells[Row, Col]++;
-                    if (Cells[Row, Col] > 9)
-                    {
-                        // if you have tried all options and none of them succeded.
-                        Cells[Row, Col] = 0;
-                        direction = -1;// backtrack
-                        continue;
-                    };
-                    if (CheckConstraints(Row, Col))
-                    {
-                        // if no collision at this elem, move on to the next element
-                        direction = 1;
-                        continue;
-                    }
-                    else
-                    {
-                        // direction = 0;
-                    };
-
-                    
-                }
-                
-                
-            }
-        }
-
-        private int Move(int elem_index, int direction)
-        {
-            throw new NotImplementedException();
-        }
-
         public bool CheckConstraints(int elem_row, int elem_col)
         {
             
             return Row_Constraint_Satisfied(elem_row) && Col_Constraint_Satisfied(elem_col) && Box_Constraint_Satisfied(elem_row, elem_col);
         }
 
-        public int CheckConstraints()
+        public int CheckConstraints(bool with_output=true)
         {
             int error_count = 0;
             for (int i=0; i<Size; i++)
             {
                 if (!Row_Constraint_Satisfied(i))
                 {
-                    Console.WriteLine("Collision in Row " + i.ToString());
+                    if (with_output) {
+                        Console.WriteLine("Collision in Row " + i.ToString());
+                    };
                     error_count++;
                 }
                 if (!Col_Constraint_Satisfied(i))
                 {
-                    Console.WriteLine("Collision in Col " + i.ToString());
+                    if (with_output)
+                    {
+                        Console.WriteLine("Collision in Col " + i.ToString());
+                    };
                     error_count++;
                 } 
             }
@@ -162,12 +88,18 @@ namespace SharpSudoku
                 {
                     if (!Box_Constraint_Satisfied(i,j))
                     {
-                        Console.WriteLine("Collision in Box " + i.ToString() +"x" + j.ToString());
+                        if (with_output)
+                        {
+                            Console.WriteLine("Collision in Box " + i.ToString() + "x" + j.ToString());
+                        };
                         error_count++;
                     }
                 }
             }
-            Console.WriteLine("Collisions Found on Board: " + error_count.ToString());
+            if (with_output)
+            {
+                Console.WriteLine("Collisions Found on Board: " + error_count.ToString());
+            };
             return error_count;
         }
 
@@ -229,7 +161,7 @@ namespace SharpSudoku
 
         public void LogToConsole()
         {
-            Console.SetCursorPosition(0, 0);
+            
             string output_string = "";
             for (int i=0; i<Size; i++)
             {
@@ -248,15 +180,11 @@ namespace SharpSudoku
                 {
                     Console.WriteLine("");
                 }
-                Console.WriteLine(output_string);
+                Console.WriteLine(output_string +"              ");
                 output_string = "";
             }
             Console.WriteLine("");
         }
-
-        private void UpdateConsoleOuput()
-        {
-
-        }
+        
     }
 }
